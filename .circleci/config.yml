@@ -76,3 +76,9 @@ workflows:
       - build-backend:
          requires:
            - hello-world
+      - test-frontend:
+         requires:
+           - build-backend
+      - test-backend:
+         requires:
+           - test-frontend

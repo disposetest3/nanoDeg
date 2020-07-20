@@ -26,7 +26,7 @@ jobs:
       - checkout
       - run: cd ./backend && npm i && npm run build
 
-  #test phase
+  #Unit test phase
   test-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -61,23 +61,56 @@ jobs:
       - store_artifacts:
           path: ./backend/test-results/jest/results.xml
 
+  #tests for security
+  frontend-security:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Frontend Security Test
+          command: | 
+            cd ./frontend && npm i
+            npm audit --audit-level=critical
+       
+  backend-security:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run: 
+          name: Backend Security Test
+          command: |
+            cd ./backend && npm i
+            npm audit --audit-level=critical
+
 
 workflows:
   default:
     jobs:
-      - hello-world
-      - build-frontend:
-         requires:
-           - hello-world
-      - build-backend:
-         requires:
-           - hello-world
-      - test-frontend:
-         requires:
-           - build-frontend
-           - build-backend
-      - test-backend:
-         requires:
-           - build-backend
-           - build-frontend
+      #- hello-world
+      #- build-frontend:
+      #   requires:
+      #     - hello-world
+      #- build-backend:
+      #   requires:
+      #     - hello-world
+      #- test-frontend:
+      #   requires:
+      #     - build-frontend
+      #     - build-backend
+      #- test-backend:
+      #   requires:
+      #     - build-backend
+      #     - build-frontend
+      #- frontend-security:
+      #   requires:
+      #     - test-frontend
+      #     - test-backend
+      #- backend-security:
+      #   requires:
+      #     - test-backend
+      #     - test-frontend
+      - frontend-security
+      - backend-security
            

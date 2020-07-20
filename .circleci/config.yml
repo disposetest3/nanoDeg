@@ -30,7 +30,7 @@ jobs:
   test-frontend:
     docker:
       - image: circleci/node:13.8.0
-    working_directory: ./frontend
+    working_directory: ~/frontend
     steps:
       - checkout
       - run:
@@ -49,7 +49,7 @@ jobs:
   test-backend:
     docker:
       - image: circleci/node:13.8.0
-    working_directory: ./backend
+    working_directory: ~/backend
     steps:
       - checkout
       - run: 
@@ -78,6 +78,7 @@ workflows:
            - hello-world
       - test-frontend:
          requires:
+           - build-frontend
            - build-backend
       - test-backend:
          requires:

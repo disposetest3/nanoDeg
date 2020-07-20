@@ -1,0 +1,8 @@
+- name: "Backend Setup"
+  hosts: remote
+  user: ubuntu
+
+
+  roles:
+    - copy-backend
+

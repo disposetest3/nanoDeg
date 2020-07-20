@@ -1,0 +1,5 @@
+- name: "Run Db migrations"
+  become: true
+  shell: |
+    cd ~/backend
+    npm run migrations

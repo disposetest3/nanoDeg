@@ -137,7 +137,7 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: ["99:6b:34:3d:85:5b:f2:06:66:39:a2:d0:14:90:04:b5"]
+          fingerprints: ["48:54:a0:b5:41:d3:4e:c2:0f:f8:b4:1e:8b:08:d5:35"]
       - run:
           name: Server dependencies
           command: |

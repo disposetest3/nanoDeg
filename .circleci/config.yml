@@ -11,7 +11,28 @@ jobs:
           command: |
             echo "Hello World"
 
+  #build phase
+  build-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run: cd ./frontend && npm i && npm run build 
+
+  build-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run: cd ./backend && npm i && npm run build
+
 workflows:
   default:
     jobs:
       - hello-world
+      - build-frontend:
+        requires:
+           - hello-world
+     - build-backend:
+         requires:
+           - hello-world

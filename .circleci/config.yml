@@ -30,17 +30,16 @@ jobs:
   test-frontend:
     docker:
       - image: circleci/node:13.8.0
-    working_directory: ~/frontend
     steps:
       - checkout
       - run:
           name: Frontend Test
           command: | 
-            npm i
+            cd ./frontend && npm i
             npm install --save-dev jest-junit
             npm run test --ci --runInBand --reporters=default --reporters=jest-junit
           environment:
-              JEST_JUNIT_OUTPUT_DIR: ./test-results/jest/results.xml
+              JEST_JUNIT_OUTPUT_DIR: ./frontend/test-results/jest/results.xml
       - store_test_results:
           path: test-results
       - store_artifacts:
@@ -49,21 +48,20 @@ jobs:
   test-backend:
     docker:
       - image: circleci/node:13.8.0
-    working_directory: ~/backend
     steps:
       - checkout
       - run: 
           environment:
-            JEST_JUNIT_OUTPUT_DIR: ./test-results/jest/results.xml
+            JEST_JUNIT_OUTPUT_DIR: ./backend/test-results/jest/results.xml
           name: Backend Test
           command: |
-            npm i
+            cd ./backend && npm i
             npm install --save-dev jest-junit
             npm run test --ci --reporters=default --reporters=jest-junit
       - store_test_results:
-          path: test-results
+          path: ./backend/test-results
       - store_artifacts:
-          path: test-results
+          path: ./backend/test-results
 
 
 workflows:

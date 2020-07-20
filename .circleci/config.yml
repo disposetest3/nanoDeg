@@ -84,6 +84,68 @@ jobs:
             cd ./backend && npm i
             npm audit --audit-level=critical
 
+  #Infrastructure creation
+  network-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Setup network infrastructure
+          command: |
+            cd ./.circleci/files
+            aws cloudformation deploy --template-file ./network.yml --stack-name nanoDegNetworkStack --region us-west-2
+            
+  cloudfront-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Setup cloudfront infrastructure
+          command: |
+            cd ./.circleci/files
+            aws cloudformation deploy --template-file ./cloudfront.yml --stack-name nanoDegCloudfrontStack --region us-west-2
+
+  backend-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Setup backend infrastructure
+          command: |
+            cd ./.circleci/files
+            aws cloudformation deploy --template-file ./backend.yml --stack-name nanoDegBackendStack --region us-west-2
+       
+  
+
+  frontend-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Setup frontend infrastructure
+          command: |
+            cd ./.circleci/files
+            aws cloudformation deploy --template-file ./frontend.yml --stack-name nanoDegFrontendStack --region us-west-2
+
+  backend-config:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["99:6b:34:3d:85:5b:f2:06:66:39:a2:d0:14:90:04:b5"]
+      - run:
+          name: Server dependencies
+          command: |
+              apk add --update ansible 
+              #run ansible playbook
+              cd ./.circleci/ansible
+              ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt main.yml
+
 
 workflows:
   default:
@@ -111,6 +173,18 @@ workflows:
       #   requires:
       #     - test-backend
       #     - test-frontend
-      - frontend-security
-      - backend-security
+      #- network-infrastructure:
+      #   requires:
+      #     - backend-security
+      - network-infrastructure
+      - frontend-infrastructure:
+         requires:
+           - network-infrastructure
+      - backend-infrastructure:
+         requires:
+           - frontend-infrastructure
+      - cloudfront-infrastructure:
+         requires:
+           - backend-infrastructure
+
            

@@ -135,6 +135,13 @@
     "snapshotSerializers": [
       "enzyme-to-json"
     ],
+    "reporters": [
+      "default",
+      [ "jest-junit", {
+        "outputDirectory": "test-results/jest",
+        "outputName": "results.xml"
+      } ]
+    ],
     "moduleNameMapper": {
       "^app/(.*)$": "<rootDir>/app/$1",
       "\\.(css|less)$": "identity-obj-proxy",

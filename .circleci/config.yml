@@ -37,7 +37,7 @@ jobs:
           command: | 
             cd ./frontend && npm i
             npm install --save-dev jest-junit
-            npm run test --ci --runInBand --reporters=default --reporters=jest-junit
+            npm run test --ci --reporters=default --reporters=jest-junit
           environment:
               JEST_JUNIT_OUTPUT_DIR: ./frontend/test-results/jest/results.xml
       - store_test_results:

@@ -41,9 +41,9 @@ jobs:
           environment:
               JEST_JUNIT_OUTPUT_DIR: ./frontend/test-results/jest/results.xml
       - store_test_results:
-          path: test-results
+          path: ./frontend/test-results
       - store_artifacts:
-          path: test-results
+          path: ./frontend/test-results
     
   test-backend:
     docker:

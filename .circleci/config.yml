@@ -130,7 +130,7 @@ jobs:
           command: |
             cd ./.circleci/files
             aws cloudformation deploy --template-file ./frontend.yml --stack-name nanoDegFrontendStack --region us-west-2
-
+  #Configure server
   backend-config:
     docker:
       - image: python:3.7-alpine3.11
@@ -145,6 +145,18 @@ jobs:
               #run ansible playbook
               cd ./.circleci/ansible
               ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt main.yml
+              
+  #database migration
+  db-migrations:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Database migrations
+          command: |
+            cd ./backend && npm i
+            npm run migrations
 
 
 workflows:
@@ -175,6 +187,7 @@ workflows:
       #     - test-frontend
       #- network-infrastructure:
       #   requires:
+      #     - frontend-security
       #     - backend-security
       #- frontend-infrastructure:
       #   requires:
@@ -185,6 +198,9 @@ workflows:
       #- cloudfront-infrastructure:
       #   requires:
       #     - backend-infrastructure
-      - backend-config
+      #- backend-config:
+      #   requires:
+      #     - backend-infrastructure
+      - db-migrations
 
            

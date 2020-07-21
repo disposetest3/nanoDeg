@@ -2,11 +2,11 @@
 - name: Compress directory
   archive:
     path: ../../backend
-    dest: ~/backend.tar.gz
+    dest: ./backend.tar.gz
 
 
 - name: Extract directory to ec2 instance
   become: true
   unarchive:
-    src: ~/backend.tar.gz
+    src: ./backend.tar.gz
     dest: /home/ubuntu

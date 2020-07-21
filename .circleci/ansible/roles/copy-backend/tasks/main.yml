@@ -2,11 +2,11 @@
 - name: Compress directory
   archive:
     path: ../../backend
-    dest: ~/project/.circleci/ansible/roles/copy-backend/files/backend.tar.gz
+    dest: ~/backend.tar.gz
 
 
 - name: Extract directory to ec2 instance
   become: true
   unarchive:
-    src: ~/frontend
+    src: ~/backend.tar.gz
     dest: /home/ubuntu

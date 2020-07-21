@@ -165,8 +165,8 @@ jobs:
               cd ./.circleci/ansible
               ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt backendCopy.yml
 
-   #Run Migrations with ansible
-   migrate:
+  #Run Migrations with ansible
+  migrate:
     docker:
       - image: python:3.7-alpine3.11
     steps:

@@ -172,10 +172,14 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install dependencies
+          command: cd ./backend && npm i
+      - run:
+          name: Start the app
+          command: cd ./backend && npm run start
+      - run:
           name: Database migrations
-          command: |
-            cd ./backend && npm i
-            npm run migrations
+          command: cd ./backend && npm run migrations
 
 
 workflows:
@@ -220,7 +224,7 @@ workflows:
       #- backend-config:
       #   requires:
       #     - backend-infrastructure
-      #- db-migrations
-      - upload-backend
+      - db-migrations
+      #- upload-backend
 
            

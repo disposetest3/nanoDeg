@@ -4,3 +4,4 @@
   unarchive:
     src: /root/project/backend.tar.gz
     dest: /home/ubuntu
+    remote_src: yes

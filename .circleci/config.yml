@@ -240,8 +240,8 @@ workflows:
       #- backend-config:
       #   requires:
       #     - backend-infrastructure
-      - db-migrations
+      #- db-migrations
       #- upload-backend
-      #- migrate
+      - migrate
 
            

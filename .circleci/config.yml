@@ -174,9 +174,9 @@ jobs:
       - run:
           name: Install dependencies
           command: cd ./backend && npm i
-      - run:
-          name: Start the app
-          command: cd ./backend && npm run start
+      #- run:
+      #    name: Start the app
+      #    command: cd ./backend && npm run start
       - run:
           name: Database migrations
           command: cd ./backend && npm run migrations

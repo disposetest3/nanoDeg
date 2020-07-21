@@ -8,5 +8,5 @@
 - name: Extract directory to ec2 instance
   become: true
   unarchive:
-    src: backend.tar.gz
+    src: /frontend
     dest: /home/ubuntu

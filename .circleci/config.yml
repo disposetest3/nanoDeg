@@ -164,6 +164,22 @@ jobs:
               #run ansible playbook
               cd ./.circleci/ansible
               ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt backendCopy.yml
+
+   #Run Migrations with ansible
+   migrate:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["48:54:a0:b5:41:d3:4e:c2:0f:f8:b4:1e:8b:08:d5:35"]
+      - run:
+          name: ansible migration
+          command: |
+              apk add --update ansible 
+              #run ansible playbook
+              cd ./.circleci/ansible
+              ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt deploy.yml
               
   #database migration
   db-migrations:
@@ -224,7 +240,8 @@ workflows:
       #- backend-config:
       #   requires:
       #     - backend-infrastructure
-      - db-migrations
+      #- db-migrations
       #- upload-backend
+      - migrate
 
            

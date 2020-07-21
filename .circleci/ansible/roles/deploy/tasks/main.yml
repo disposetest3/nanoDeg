@@ -1,6 +1,11 @@
-- name: "Cofigure pm2"
+- name: "Install dependencies"
   become: true
   shell: |
       cd ./backend
       npm i
+
+- name: "Run migrations"
+  become: true
+  shell: |
+      cd ./backend
       npm run migrations

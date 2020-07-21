@@ -1,5 +1,5 @@
 - name: "Cofigure pm2"
   become: true
   shell: |
-      cd ~/backend
+      cd home/ubuntu/backend
       npm run migrations

@@ -270,10 +270,10 @@ workflows:
       #   requires:
       #     - frontend-security
       #     - backend-security
-      - network-infrastructure
-      - frontend-infrastructure:
-         requires:
-           - network-infrastructure
+      - frontend-infrastructure
+      #- frontend-infrastructure:
+      #   requires:
+      #     - network-infrastructure
       - backend-infrastructure:
          requires:
            - frontend-infrastructure

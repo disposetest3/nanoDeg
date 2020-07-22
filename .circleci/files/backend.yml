@@ -34,8 +34,6 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.micro
-      SecurityGroups:
-        - Ref: InstanceSecurityGroup
       SecurityGroupIds:
         - Ref: InstanceSecurityGroup
       KeyName: nanoDegKEy

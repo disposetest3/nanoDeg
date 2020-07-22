@@ -270,16 +270,16 @@ workflows:
       #   requires:
       #     - frontend-security
       #     - backend-security
-      - frontend-infrastructure
+      - db-migrations
       #- frontend-infrastructure:
       #   requires:
       #     - network-infrastructure
-      - backend-infrastructure:
-         requires:
-           - frontend-infrastructure
-      - cloudfront-infrastructure:
-         requires:
-           - backend-infrastructure
+      #- backend-infrastructure:
+      #   requires:
+      #     - frontend-infrastructure
+      #- cloudfront-infrastructure:
+      #   requires:
+      #     - backend-infrastructure
       #- backend-config:
       #   requires:
       #     - backend-infrastructure

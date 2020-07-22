@@ -117,7 +117,7 @@ jobs:
           name: Setup cloudfront infrastructure
           command: |
             cd ./.circleci/files
-            aws cloudformation deploy --template-file ./cloudfront.yml --stack-name nanoDegCloudfrontStack --region us-west-2
+            aws cloudformation deploy --template-file ./cloudfront.yml --stack-name --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID} nanoDegCloudfrontStack --region us-west-2
 
   backend-infrastructure:
     docker:
@@ -128,7 +128,7 @@ jobs:
           name: Setup backend infrastructure
           command: |
             cd ./.circleci/files
-            aws cloudformation deploy --template-file ./backend.yml --stack-name nanoDegBackendStack --region us-west-2
+            aws cloudformation deploy --template-file ./backend.yml --stack-name nanoDegBackendStack --parameter-overrides ID=${CIRCLE_WORKFLOW_ID} --region us-west-2
        
   frontend-infrastructure:
     docker:
@@ -139,7 +139,7 @@ jobs:
           name: Setup frontend infrastructure
           command: |
             cd ./.circleci/files
-            aws cloudformation deploy --template-file ./frontend.yml --stack-name nanoDegFrontendStack --region us-west-2
+            aws cloudformation deploy --template-file ./frontend.yml --stack-name nanoDegFrontendStack --parameter-overrides ID=${CIRCLE_WORKFLOW_ID} --region us-west-2
 
   #Configure server
   backend-config:

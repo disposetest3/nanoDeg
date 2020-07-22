@@ -2,6 +2,11 @@ Description: >
   UdaPeople backend stack.
 
 Parameters:
+  EnvironmentName:
+    Description: The environment name.
+    Type: String
+    Default: nanoDeg
+    
   ID:
     Description: Unique identifier.
     Type: String
@@ -13,6 +18,9 @@ Resources:
     Properties:
       GroupName: !Sub UdaPeople-${ID}
       GroupDescription: Allow port 22 and port 3030.
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${EnvironmentName}-VPCID"
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22

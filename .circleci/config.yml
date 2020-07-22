@@ -1,5 +1,17 @@
 version: 2.1
 
+commands:
+  #rollback phase
+  rollback:
+    steps:
+      - run:
+          name: Delete a stack
+          command: aws cloudformation delete-stack --stack-name nanoDegBackendStack
+      - run:
+          name: Revert last Migration
+          command: npm run migrations:revert
+      - run: return 1
+
 jobs:
   hello-world:
     docker:
@@ -118,8 +130,6 @@ jobs:
             cd ./.circleci/files
             aws cloudformation deploy --template-file ./backend.yml --stack-name nanoDegBackendStack --region us-west-2
        
-  
-
   frontend-infrastructure:
     docker:
       - image: amazon/aws-cli
@@ -130,6 +140,7 @@ jobs:
           command: |
             cd ./.circleci/files
             aws cloudformation deploy --template-file ./frontend.yml --stack-name nanoDegFrontendStack --region us-west-2
+
   #Configure server
   backend-config:
     docker:
@@ -145,6 +156,19 @@ jobs:
               #run ansible playbook
               cd ./.circleci/ansible
               ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt main.yml
+              
+  #database migration
+  db-migrations:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: cd ./backend && npm i
+      - run:
+          name: Database migrations
+          command: cd ./backend && npm run migrations
 
   #Copy backend files to ec2
   upload-backend:
@@ -154,6 +178,9 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: ["48:54:a0:b5:41:d3:4e:c2:0f:f8:b4:1e:8b:08:d5:35"]
+      - run:
+          name: Build Backend
+          command: cd ./backend && npm i && npm run build
       - run:
           name: Compress backend folder
           command: tar -cvzf backend.tar.gz ./backend
@@ -165,37 +192,52 @@ jobs:
               cd ./.circleci/ansible
               ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt backendCopy.yml
 
-  #Run Migrations with ansible
-  migrate:
+  #Deploy frontend to s3bucket
+  deploy-frontend:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: circleci/node:13.8.0
+    environment:
+      API_URL=ec2-54-149-85-171.us-west-2.compute.amazonaws.com
     steps:
       - checkout
       - add_ssh_keys:
           fingerprints: ["48:54:a0:b5:41:d3:4e:c2:0f:f8:b4:1e:8b:08:d5:35"]
       - run:
-          name: ansible migration
+          name: Rebuild frontend
           command: |
-              apk add --update ansible 
-              #run ansible playbook
-              cd ./.circleci/ansible
-              ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt deploy.yml
-              
-  #database migration
-  db-migrations:
+              cd ./frontend && npm i && npm run build
+              sudo apt install awscli -y
+      - run:
+          name: Deploy frontend
+          command: |
+              aws s3 sync ./frontend s3://udapeople-nanodegfront --delete
+
+  #Smoketest
+  smoketest:
     docker:
-      - image: circleci/node:13.8.0
+      - image: alpine:latest
     steps:
       - checkout
       - run:
-          name: Install dependencies
-          command: cd ./backend && npm i
-      #- run:
-      #    name: Start the app
-      #    command: cd ./backend && npm run start
+          name: backend smoketest
+          command: |
+              BACKEND_IP=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=backend-nanoDegback" \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text)
+              curl "http://${BACKEND_IP}:3030/api/status"
       - run:
-          name: Database migrations
-          command: cd ./backend && npm run migrations
+          name: frontend smoketest
+          command: |
+              URL="http://udapeople-nanodegfront.s3-website-us-west-2.amazonaws.com/#/employees"            
+              if curl -s ${URL} | grep "Welcome"
+              then
+              return 1
+              else
+              return 0
+              fi
+      - rollback:
+          when: on_fail
 
 
 workflows:
@@ -228,20 +270,31 @@ workflows:
       #   requires:
       #     - frontend-security
       #     - backend-security
-      #- frontend-infrastructure:
+      - network-infrastructure
+      - frontend-infrastructure:
+         requires:
+           - network-infrastructure
+      - backend-infrastructure:
+         requires:
+           - frontend-infrastructure
+      - cloudfront-infrastructure:
+         requires:
+           - backend-infrastructure
+      - backend-config:
+         requires:
+           - backend-infrastructure
+      #- db-migrations:
       #   requires:
-      #     - network-infrastructure
-      #- backend-infrastructure:
+      #     - cloudfront-infrastructure
+      #     - backend-config 
+      #- upload-backend:
       #   requires:
-      #     - frontend-infrastructure
-      #- cloudfront-infrastructure:
+      #     - db-migrations
+      #- deploy-frontend:
       #   requires:
-      #     - backend-infrastructure
-      #- backend-config:
-      #   requires:
-      #     - backend-infrastructure
-      #- db-migrations
-      #- upload-backend
-      - migrate
+      #     - upload-backend
+      #- smoketest:
+      #    requires:
+      #      - deploy-frontend
 
            

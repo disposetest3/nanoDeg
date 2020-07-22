@@ -40,7 +40,6 @@
     dest: /var/www/html/index.html
     backup: yes
 
-
 - name: "install pm2"
   become: true
   npm:
@@ -49,10 +48,18 @@
     production: yes
     state: present
 
-#- name: "Cofigure pm2"
-#  become: true
-#  shell: |
-#      env PATH=$PATH:/usr/local/bin pm2 startup -u ubuntu
+- name: "install and set libcap2"
+  become: true
+  shell: |
+      apt-get install libcap2-bin
+      setcap capnetbind_service=+ep /usr/local/bin/node
+
+- name: "Cofigure pm2"
+  become: true
+  shell: |
+      env PATH=$PATH:/usr/local/bin pm2 startup -u ubuntu
+
+
   
 
 

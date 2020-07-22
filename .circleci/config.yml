@@ -117,7 +117,7 @@ jobs:
           name: Setup cloudfront infrastructure
           command: |
             cd ./.circleci/files
-            aws cloudformation deploy --template-file ./cloudfront.yml --stack-name --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID} nanoDegCloudfrontStack --region us-west-2
+            aws cloudformation deploy --template-file ./cloudfront.yml --stack-name nanoDegCloudfrontStack --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID} nanoDegCloudfrontStack --region us-west-2
 
   backend-infrastructure:
     docker:

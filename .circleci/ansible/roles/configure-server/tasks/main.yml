@@ -48,12 +48,6 @@
     production: yes
     state: present
 
-- name: "install and set libcap2"
-  become: true
-  shell: |
-      apt-get install libcap2-bin
-      setcap capnetbind_service=+ep /usr/local/bin/node
-
 - name: "Cofigure pm2"
   become: true
   shell: |

@@ -272,7 +272,7 @@ workflows:
       #   requires:
       #     - frontend-security
       #     - backend-security
-      #- db-migrations
+      - backend-config
       #- frontend-infrastructure:
       #   requires:
       #     - network-infrastructure
@@ -282,7 +282,7 @@ workflows:
       #- cloudfront-infrastructure:
       #   requires:
       #     - backend-infrastructure
-      - backend-config:
+      #- backend-config:
       #   requires:
       #     - backend-infrastructure
       #- db-migrations:

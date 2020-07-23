@@ -163,6 +163,8 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints: ["48:54:a0:b5:41:d3:4e:c2:0f:f8:b4:1e:8b:08:d5:35"]
       - run:
           name: Install dependencies
           command: cd ./backend && npm i
@@ -287,10 +289,7 @@ workflows:
       #   requires:
       #     - frontend-security
       #     - backend-security
-      - upload-backend
-      - vm-db-migrations:
-          requires:
-            - upload-backend
+      - db-migrations
       #- frontend-infrastructure:
       #   requires:
       #     - network-infrastructure

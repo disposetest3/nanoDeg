@@ -198,6 +198,7 @@ jobs:
       - image: circleci/node:13.8.0
     environment:
       API_URL=ec2-54-149-85-171.us-west-2.compute.amazonaws.com
+#################################################################
     steps:
       - checkout
       - add_ssh_keys:
@@ -210,7 +211,8 @@ jobs:
       - run:
           name: Deploy frontend
           command: |
-              aws s3 sync ./frontend s3://udapeople-nanodegfront --delete
+              aws s3 sync ./frontend s3://udapeople-nanodegfront --delete  
+  ######################################################################
 
   #Smoketest
   smoketest:
@@ -222,14 +224,14 @@ jobs:
           name: backend smoketest
           command: |
               BACKEND_IP=$(aws ec2 describe-instances \
-              --filters "Name=tag:Name,Values=backend-nanoDegback" \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
               curl "http://${BACKEND_IP}:3030/api/status"
       - run:
           name: frontend smoketest
           command: |
-              URL="http://udapeople-nanodegfront.s3-website-us-west-2.amazonaws.com/#/employees"            
+              URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-west-2.amazonaws.com/#/employees"            
               if curl -s ${URL} | grep "Welcome"
               then
               return 1

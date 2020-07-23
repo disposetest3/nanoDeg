@@ -2,30 +2,26 @@
   become: true
   raw: test -e /usr/bin/python3 || (apt -y update && apt install -y python3)
 
-- name: "apt packages update"
+- name: "Update packages"
   become: true
-  become_method: sudo
-  apt:
-    update_cache: yes
+  shell: |
+      apt-get update
 
-- name: "packages upgrade"
+- name: "Upgrade packages"
   become: true
-  apt:
-    upgrade: yes
+  shell: |
+      apt-get upgrade -y
 
 - name: "install node js dependencies"
   become: true
-  apt:
-    name: ["nodejs", "npm"]
-    state: latest
-    update_cache: yes
+  shell: |
+      curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+      sudo apt-get install -y nodejs
 
-- name: install apache2
+- name: "install node js dependencies"
   become: true
-  apt:
-    name: ["apache2"]
-    state: latest
-    update_cache: yes
+  shell: |
+      apt-get install -y apache2
 
 - name: install git
   become: true
@@ -42,16 +38,13 @@
 
 - name: "install pm2"
   become: true
-  npm:
-    name: pm2
-    global: yes
-    production: yes
-    state: present
+  shell: |
+      npm install -g pm2
 
 - name: "Cofigure pm2"
   become: true
   shell: |
-      env PATH=$PATH:/usr/local/bin pm2 startup -u ubuntu
+      env PATH=$PATH:/usr/bin /usr/local/lib/node_modules/pm2/bin/pm2 startup systemd -u ubuntu --hp /home/ubuntu
 
 
   

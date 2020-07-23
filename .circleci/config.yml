@@ -193,9 +193,9 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: ["48:54:a0:b5:41:d3:4e:c2:0f:f8:b4:1e:8b:08:d5:35"]
-      - run:
-          name: Build Backend
-          command: cd ./backend && npm i && npm run build
+    #  - run:
+    #      name: Build Backend
+    #      command: cd ./backend && npm i && npm run build
       - run:
           name: Compress backend folder
           command: tar -cvzf backend.tar.gz ./backend

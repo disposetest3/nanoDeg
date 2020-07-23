@@ -170,6 +170,21 @@ jobs:
           name: Database migrations
           command: cd ./backend && npm run migrations
 
+  vm-db-migrations:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["48:54:a0:b5:41:d3:4e:c2:0f:f8:b4:1e:8b:08:d5:35"]
+      - run:
+          name: ansible migration from vm
+          command: |
+              apk add --update ansible 
+              #run ansible playbook
+              cd ./.circleci/ansible
+              ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt deploy.yml
+
   #Copy backend files to ec2
   upload-backend:
     docker:
@@ -272,7 +287,10 @@ workflows:
       #   requires:
       #     - frontend-security
       #     - backend-security
-      - backend-config
+      - upload-backend
+      - vm-db-migrations:
+          requires:
+            - upload-backend
       #- frontend-infrastructure:
       #   requires:
       #     - network-infrastructure

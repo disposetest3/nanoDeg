@@ -2,8 +2,6 @@
   become: true
   shell: |
       cd ./backend
-      npm -v
-      node -v
       npm i
 
 - name: "Run migrations"

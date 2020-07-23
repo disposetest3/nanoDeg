@@ -3,6 +3,7 @@
   shell: |
       cd ./backend
       npm i
+      npm run build
 
 - name: "Run migrations"
   become: true

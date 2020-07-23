@@ -289,10 +289,7 @@ workflows:
       #   requires:
       #     - frontend-security
       #     - backend-security
-      - upload-backend
-      - vm-db-migrations:
-          requires:
-            - upload-backend
+      - db-migrations
       #- frontend-infrastructure:
       #   requires:
       #     - network-infrastructure

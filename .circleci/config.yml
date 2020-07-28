@@ -161,6 +161,7 @@ jobs:
   db-migrations:
     docker:
       - image: circleci/node:13.8.0
+      - image: postgres:9.6.2-alpine
     steps:
       - checkout
       - add_ssh_keys:

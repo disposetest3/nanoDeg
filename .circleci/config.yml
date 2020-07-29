@@ -156,9 +156,8 @@ jobs:
             echo "[remote]" | tee inventory.txt
             ##Get the backend URL
             ##sudo apt-get install awscli -y
-            URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicDnsName' --output text)
+            aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicDnsName' --output text | tee -a inventory.txt
             ##Save the backend url
-            echo $URL | tee -a inventory.txt
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "$URL" https://api.memstash.io/values/backend_url
   frontend-infrastructure:
     docker:

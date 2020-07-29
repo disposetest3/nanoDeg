@@ -97,7 +97,7 @@ jobs:
             cd ./.circleci/files
             aws cloudformation deploy \
               --template-file ./network.yml \
-              --stack-name nanoDegNetworkStack-${CIRCLE_WORKFLOW_ID:0:7} \
+              --stack-name nanoDegNetworkStack \
               --region us-west-2
             
   cloudfront-infrastructure:
@@ -130,12 +130,14 @@ jobs:
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7} \
               --region us-west-2
       - run:
-          name: Get backend url and Save it to memstash
+          name: Get backend url and Save it to memstash and inventory file
           command: |
             sudo apt install curl -y
+            echo "[remote]" | tee ./.circleci/ansible/inventory.txt
             ##Get the backend URL
             URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicDnsName' --output text)
             ##Save the backend url
+            echo $URL | tee -a ./.circleci/ansible/inventory.txt
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "$URL" https://api.memstash.io/values/backend_url 
 
   frontend-infrastructure:

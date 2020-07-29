@@ -129,6 +129,10 @@ jobs:
               --stack-name nanoDegBackendStack-${CIRCLE_WORKFLOW_ID:0:7} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7} \
               --region us-west-2
+  save-backurl:
+    docker: 
+      - image: circleci/node:13.8.0
+    steps:
       - run:
           name: Get backend url and Save it to memstash and inventory file
           command: |
@@ -154,11 +158,15 @@ jobs:
               --stack-name nanoDegFrontendStack-${CIRCLE_WORKFLOW_ID:0:7} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7} \
               --region us-west-2
+  save-bucketarn:
+    docker: 
+      - image: circleci/node:13.8.0
+    steps:         
       - run:
           name: Save the Bucket ARN
           command: |
             apt-get install curl -y
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:8}" --request PUT --data "arn:aws:s3:::udapeople-db8fdde7-e82b-44be-b014-b79a109ab715/*" https://api.memstash.io/values/bucket_arn
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:8}" --request PUT --data "arn:aws:s3:::udapeople-${CIRCLE_WORKFLOW_ID:0:7}/*" https://api.memstash.io/values/bucket_arn
 
   #Configure server
   backend-config:
@@ -298,17 +306,23 @@ workflows:
       #   requires:
       #     - test-backend
       #     - test-frontend
-      - network-infrastructure
       #- network-infrastructure:
       #   requires:
       #     - frontend-security
       #     - backend-security
-      - frontend-infrastructure:
+      - frontend-infrastructure
+      #- frontend-infrastructure:
+      #   requires:
+      #     - network-infrastructure
+      - save-bucketarn:
          requires:
-           - network-infrastructure
+           - frontend-infrastructure
       - backend-infrastructure:
          requires:
            - frontend-infrastructure
+      - save-backurl:
+         requires:
+           - backend-infrastructure
       - cloudfront-infrastructure:
          requires:
            - backend-infrastructure

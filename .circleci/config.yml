@@ -132,7 +132,7 @@ jobs:
       - run:
           name: Get backend url and Save it to memstash and inventory file
           command: |
-            sudo apt install curl -y
+            apt-get install curl -y
             echo "[remote]" | tee ./.circleci/ansible/inventory.txt
             ##Get the backend URL
             URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicDnsName' --output text)
@@ -157,7 +157,7 @@ jobs:
       - run:
           name: Save the Bucket ARN
           command: |
-            sudo apt install curl -y
+            apt-get install curl -y
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:8}" --request PUT --data "arn:aws:s3:::udapeople-db8fdde7-e82b-44be-b014-b79a109ab715/*" https://api.memstash.io/values/bucket_arn
 
   #Configure server
@@ -242,7 +242,7 @@ jobs:
           name: Rebuild frontend
           command: |
               cd ./frontend && npm i && npm run build
-              sudo apt install awscli -y
+              apt-get install awscli -y
       - run:
           name: Deploy frontend
           command: |

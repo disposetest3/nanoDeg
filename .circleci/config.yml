@@ -136,14 +136,28 @@ jobs:
       - run:
           name: Get backend url and Save it to memstash and inventory file
           command: |
-            sudo apt-get install curl -y
-            echo "[remote]" | tee ./.circleci/ansible/inventory.txt
+            cd ./.circleci/ansible
+            echo "[remote]" | tee inventory.txt
             ##Get the backend URL
             URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicDnsName' --output text)
             ##Save the backend url
-            echo $URL | tee -a ./.circleci/ansible/inventory.txt
+            echo $URL | tee -a inventory.txt
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "$URL" https://api.memstash.io/values/backend_url 
-
+  test:
+    docker: 
+      - image: circleci/node:13.8.0
+    steps:
+      - run:
+          name: Get backend url and Save it to memstash and inventory file
+          command: |
+            cd ./.circleci/ansible
+            echo "[remote]" | tee inventory.txt
+            ##Get the backend URL
+            sudo apt-get install awscli -y
+            URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicDnsName' --output text)
+            ##Save the backend url
+            echo $URL | tee -a inventory.txt
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "$URL" https://api.memstash.io/values/backend_url
   frontend-infrastructure:
     docker:
       - image: amazon/aws-cli
@@ -165,8 +179,7 @@ jobs:
       - run:
           name: Save the Bucket ARN
           command: |
-            sudo apt-get install curl -y
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:8}" --request PUT --data "arn:aws:s3:::udapeople-${CIRCLE_WORKFLOW_ID:0:7}/*" https://api.memstash.io/values/bucket_arn
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:6}" --request PUT --data "arn:aws:s3:::udapeople-${CIRCLE_WORKFLOW_ID:0:7}/*" https://api.memstash.io/values/bucket_arn
 
   #Configure server
   backend-config:
@@ -310,25 +323,25 @@ workflows:
       #   requires:
       #     - frontend-security
       #     - backend-security
-      - frontend-infrastructure
+      - test
       #- frontend-infrastructure:
       #   requires:
       #     - network-infrastructure
-      - save-bucketarn:
-         requires:
-           - frontend-infrastructure
-      - backend-infrastructure:
-         requires:
-           - frontend-infrastructure
-      - save-backurl:
-         requires:
-           - backend-infrastructure
-      - cloudfront-infrastructure:
-         requires:
-           - backend-infrastructure
-      - backend-config:
-         requires:
-           - backend-infrastructure
+      #- save-bucketarn:
+      #   requires:
+      #     - frontend-infrastructure
+      #- backend-infrastructure:
+      #   requires:
+      #     - frontend-infrastructure
+      #- save-backurl:
+      #   requires:
+      #     - backend-infrastructure
+      #- cloudfront-infrastructure:
+      #   requires:
+      #     - backend-infrastructure
+      #- backend-config:
+      #   requires:
+      #     - backend-infrastructure
       #- db-migrations:
       #   requires:
       #     - cloudfront-infrastructure

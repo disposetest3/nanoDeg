@@ -151,7 +151,7 @@ jobs:
           name: Get backend url and Save it to memstash and inventory file
           command: |
             ls
-            cd ./.circleci/ansible
+            cd .circleci/ansible
             echo "[remote]" | tee inventory.txt
             ##Get the backend URL
             sudo apt-get install awscli -y

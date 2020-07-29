@@ -140,26 +140,12 @@ jobs:
             cd ./.circleci/ansible
             echo "[remote]" | tee inventory.txt
             ##Get the backend URL
-            URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicDnsName' --output text)
-            ##Save the backend url
-            echo $URL | tee -a inventory.txt
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "$URL" https://api.memstash.io/values/backend_url 
-  test:
-    docker: 
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - run:
-          name: Get backend url and Save it to memstash and inventory file
-          command: |
-            cd .circleci/ansible
-            echo "[remote]" | tee inventory.txt
-            ##Get the backend URL
             sudo apt-get install awscli -y
             URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicDnsName' --region us-west-2 --output text)
             ##Save the backend url
             echo $URL | tee -a inventory.txt
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "$URL" https://api.memstash.io/values/backend_url
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "$URL" https://api.memstash.io/values/backend_url 
+            
   frontend-infrastructure:
     docker:
       - image: amazon/aws-cli
@@ -182,7 +168,7 @@ jobs:
       - run:
           name: Save the Bucket ARN
           command: |
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:6}" --request PUT --data "arn:aws:s3:::udapeople-${CIRCLE_WORKFLOW_ID:0:7}/*" https://api.memstash.io/values/bucket_arn
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:6}" --request PUT --data "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}/*" https://api.memstash.io/values/bucket_arn
 
   #Configure server
   backend-config:
@@ -213,7 +199,18 @@ jobs:
           command: cd ./backend && npm i
       - run:
           name: Database migrations
-          command: cd ./backend && npm run migrations
+          command: cd ./backend && npm run migrations | tee migration_output.txt
+
+      - run:
+          name: Save result value
+          command: |
+          cd ./backend
+          if((grep "query: COMMIT" migration_output.txt || grep "No migrations are pending" migration_output.txt))
+          then
+          curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:8}" --request PUT --data "true" https://api.memstash.io/values/<< pipeline.id >>_migrations
+          else
+          curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:8}" --request PUT --data "false" https://api.memstash.io/values/<< pipeline.id >>_migrations
+          fi
 
   vm-db-migrations:
     docker:
@@ -233,21 +230,23 @@ jobs:
   #Copy backend files to ec2
   upload-backend:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - add_ssh_keys:
           fingerprints: ["48:54:a0:b5:41:d3:4e:c2:0f:f8:b4:1e:8b:08:d5:35"]
-    #  - run:
-    #      name: Build Backend
-    #      command: cd ./backend && npm i && npm run build
       - run:
-          name: Compress backend folder
-          command: tar -cvzf backend.tar.gz ./backend
+          name: Build Backend
+          command: cd ./backend && npm i && npm run build
+      - run:
+          name: Compress compiled backend folder
+          command: tar -cvzf backend.tar.gz ./backend/dist
       - run: 
           name: Copy files to server
           command: |
-              apk add --update ansible 
+              sudo apt-add-repository ppa:ansible/ansible -y
+              sudo apt update
+              sudo apt install ansible -y
               #run ansible playbook
               cd ./.circleci/ansible
               ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt backendCopy.yml
@@ -257,7 +256,7 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     environment:
-      API_URL=ec2-54-203-119-241.us-west-2.compute.amazonaws.com
+      API_URL=""
     steps:
       - checkout
       - add_ssh_keys:
@@ -265,13 +264,15 @@ jobs:
       - run:
           name: Rebuild frontend
           command: |
+              API_URL=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/backend_url)
               cd ./frontend && npm i && npm run build
               sudo apt-get install awscli -y
       - run:
           name: Deploy frontend
           command: |
-              aws s3 sync ./frontend s3://udapeople-nanodegfront --delete  
-  ######################################################################
+              ARN=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:6}" --request GET https://api.memstash.io/values/bucket_arn)
+              aws s3 sync ./frontend/dist $ARN --region us-west-2 --delete  
+  ######################################################################s3://udapeople-nanodegfront
 
   #Smoketest
   smoketest:
@@ -326,35 +327,35 @@ workflows:
       #   requires:
       #     - frontend-security
       #     - backend-security
-      - test
       #- frontend-infrastructure:
       #   requires:
       #     - network-infrastructure
-      #- save-bucketarn:
-      #   requires:
-      #     - frontend-infrastructure
-      #- backend-infrastructure:
-      #   requires:
-      #     - frontend-infrastructure
-      #- save-backurl:
-      #   requires:
-      #     - backend-infrastructure
-      #- cloudfront-infrastructure:
-      #   requires:
-      #     - backend-infrastructure
-      #- backend-config:
-      #   requires:
-      #     - backend-infrastructure
-      #- db-migrations:
-      #   requires:
-      #     - cloudfront-infrastructure
-      #     - backend-config 
-      #- upload-backend:
-      #   requires:
-      #     - db-migrations
-      #- deploy-frontend:
-      #   requires:
-      #     - upload-backend
+      - frontend-infrastructure
+      - save-bucketarn:
+         requires:
+           - frontend-infrastructure
+      - backend-infrastructure:
+         requires:
+           - frontend-infrastructure
+      - save-backurl:
+         requires:
+           - backend-infrastructure
+      - cloudfront-infrastructure:
+         requires:
+           - backend-infrastructure
+      - backend-config:
+         requires:
+           - backend-infrastructure
+      - db-migrations:
+         requires:
+           - cloudfront-infrastructure
+           - backend-config 
+      - upload-backend:
+         requires:
+           - db-migrations
+      - deploy-frontend:
+         requires:
+           - upload-backend
       #- smoketest:
       #    requires:
       #      - deploy-frontend

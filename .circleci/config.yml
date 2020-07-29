@@ -150,6 +150,7 @@ jobs:
       - run:
           name: Get backend url and Save it to memstash and inventory file
           command: |
+            ls
             cd ./.circleci/ansible
             echo "[remote]" | tee inventory.txt
             ##Get the backend URL

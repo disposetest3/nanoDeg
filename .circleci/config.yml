@@ -146,7 +146,7 @@ jobs:
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "$URL" https://api.memstash.io/values/backend_url 
   test:
     docker: 
-      - image: circleci/node:13.8.0
+      - image: amazon/aws-cli
     steps:
       - checkout
       - run:
@@ -155,7 +155,7 @@ jobs:
             cd .circleci/ansible
             echo "[remote]" | tee inventory.txt
             ##Get the backend URL
-            sudo apt-get install awscli -y
+            ##sudo apt-get install awscli -y
             URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicDnsName' --output text)
             ##Save the backend url
             echo $URL | tee -a inventory.txt

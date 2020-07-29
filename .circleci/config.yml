@@ -133,6 +133,7 @@ jobs:
     docker: 
       - image: circleci/node:13.8.0
     steps:
+      - checkout
       - run:
           name: Get backend url and Save it to memstash and inventory file
           command: |
@@ -147,10 +148,10 @@ jobs:
     docker: 
       - image: circleci/node:13.8.0
     steps:
+      - checkout
       - run:
           name: Get backend url and Save it to memstash and inventory file
           command: |
-            ls
             cd .circleci/ansible
             echo "[remote]" | tee inventory.txt
             ##Get the backend URL
@@ -176,7 +177,8 @@ jobs:
   save-bucketarn:
     docker: 
       - image: circleci/node:13.8.0
-    steps:         
+    steps:  
+      - checkout       
       - run:
           name: Save the Bucket ARN
           command: |

@@ -11,18 +11,7 @@ commands:
           name: Revert last Migration
           command: npm run migrations:revert
       - run: return 1
-
 jobs:
-  hello-world:
-    docker:
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run:
-          name: Say Hello
-          command: |
-            echo "Hello World"
-
   #build phase
   build-frontend:
     docker:
@@ -106,7 +95,10 @@ jobs:
           name: Setup network infrastructure
           command: |
             cd ./.circleci/files
-            aws cloudformation deploy --template-file ./network.yml --stack-name nanoDegNetworkStack --region us-west-2
+            aws cloudformation deploy \
+              --template-file ./network.yml \
+              --stack-name nanoDegNetworkStack-${CIRCLE_WORKFLOW_ID:0:7} \
+              --region us-west-2
             
   cloudfront-infrastructure:
     docker:
@@ -117,7 +109,11 @@ jobs:
           name: Setup cloudfront infrastructure
           command: |
             cd ./.circleci/files
-            aws cloudformation deploy --template-file ./cloudfront.yml --stack-name nanoDegCloudfrontStack --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID} --region us-west-2
+            aws cloudformation deploy \
+              --template-file ./cloudfront.yml \
+              --stack-name nanoDegCloudfrontStack-${CIRCLE_WORKFLOW_ID:0:7} \
+              --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID} \
+              --region us-west-2
 
   backend-infrastructure:
     docker:
@@ -128,8 +124,20 @@ jobs:
           name: Setup backend infrastructure
           command: |
             cd ./.circleci/files
-            aws cloudformation deploy --template-file ./backend.yml --stack-name nanoDegBackendStack --parameter-overrides ID=${CIRCLE_WORKFLOW_ID} --region us-west-2
-       
+            aws cloudformation deploy \
+              --template-file ./backend.yml \
+              --stack-name nanoDegBackendStack-${CIRCLE_WORKFLOW_ID:0:7} \
+              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7} \
+              --region us-west-2
+      - run:
+          name: Get backend url and Save it to memstash
+          command: |
+            sudo apt install curl -y
+            ##Get the backend URL
+            URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicDnsName' --output text)
+            ##Save the backend url
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "$URL" https://api.memstash.io/values/backend_url 
+
   frontend-infrastructure:
     docker:
       - image: amazon/aws-cli
@@ -139,7 +147,16 @@ jobs:
           name: Setup frontend infrastructure
           command: |
             cd ./.circleci/files
-            aws cloudformation deploy --template-file ./frontend.yml --stack-name nanoDegFrontendStack --parameter-overrides ID=${CIRCLE_WORKFLOW_ID} --region us-west-2
+            aws cloudformation deploy \
+              --template-file ./frontend.yml \
+              --stack-name nanoDegFrontendStack-${CIRCLE_WORKFLOW_ID:0:7} \
+              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7} \
+              --region us-west-2
+      - run:
+          name: Save the Bucket ARN
+          command: |
+            sudo apt install curl -y
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:8}" --request PUT --data "arn:aws:s3:::udapeople-db8fdde7-e82b-44be-b014-b79a109ab715/*" https://api.memstash.io/values/bucket_arn
 
   #Configure server
   backend-config:
@@ -161,7 +178,6 @@ jobs:
   db-migrations:
     docker:
       - image: circleci/node:13.8.0
-      - image: postgres:9.6.2-alpine
     steps:
       - checkout
       - add_ssh_keys:
@@ -215,8 +231,7 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     environment:
-      API_URL=ec2-54-149-85-171.us-west-2.compute.amazonaws.com
-#################################################################
+      API_URL=ec2-54-203-119-241.us-west-2.compute.amazonaws.com
     steps:
       - checkout
       - add_ssh_keys:
@@ -263,13 +278,8 @@ jobs:
 workflows:
   default:
     jobs:
-      #- hello-world
       #- build-frontend:
-      #   requires:
-      #     - hello-world
       #- build-backend:
-      #   requires:
-      #     - hello-world
       #- test-frontend:
       #   requires:
       #     - build-frontend
@@ -286,23 +296,23 @@ workflows:
       #   requires:
       #     - test-backend
       #     - test-frontend
+      - network-infrastructure
       #- network-infrastructure:
       #   requires:
       #     - frontend-security
       #     - backend-security
-      - db-migrations
-      #- frontend-infrastructure:
-      #   requires:
-      #     - network-infrastructure
-      #- backend-infrastructure:
-      #   requires:
-      #     - frontend-infrastructure
-      #- cloudfront-infrastructure:
-      #   requires:
-      #     - backend-infrastructure
-      #- backend-config:
-      #   requires:
-      #     - backend-infrastructure
+      - frontend-infrastructure:
+         requires:
+           - network-infrastructure
+      - backend-infrastructure:
+         requires:
+           - frontend-infrastructure
+      - cloudfront-infrastructure:
+         requires:
+           - backend-infrastructure
+      - backend-config:
+         requires:
+           - backend-infrastructure
       #- db-migrations:
       #   requires:
       #     - cloudfront-infrastructure

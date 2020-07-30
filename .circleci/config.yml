@@ -182,7 +182,9 @@ jobs:
           name: Server dependencies
           command: |
               sudo apt update
-              sudo apt install ansible -y
+              sudo apt install python3 -y
+              sudo apt install pip3 -y
+              sudo pip3 install ansible
               sudo apt-get install awscli -y
               cd ./.circleci/ansible
               if echo "[remote]" | tee inventory.txt ; then echo "string remote added to inventory file" ; else echo "failed to add string remote" ; fi

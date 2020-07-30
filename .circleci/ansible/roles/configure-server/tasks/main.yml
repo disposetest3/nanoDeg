@@ -38,7 +38,7 @@
   become: true
   copy:
     src: main.js
-    dest: /home/ubuntu/backend/index.html
+    dest: /home/ubuntu/backend/main.js
     backup: yes
 
 - name: "Install pm2"

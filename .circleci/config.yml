@@ -228,9 +228,9 @@ jobs:
           name: Server dependencies
           command: |
               sudo apt update
-              sudo apt install python3 -y
-              sudo apt install python3-pip -y
-              sudo pip3 install ansible
+              sudo apt install python -y
+              sudo apt install python-pip -y
+              sudo pip install ansible
               sudo apt-get install awscli -y
               cd ./.circleci/ansible
               if echo "[remote]" | tee inventory.txt ; then echo "string remote added to inventory file" ; else echo "failed to add string remote" ; fi
@@ -285,14 +285,16 @@ jobs:
           name: Copy files to server
           command: |
               sudo apt update
-              sudo apt install ansible -y
+              sudo apt install python3 -y
+              sudo apt install python3-pip -y
+              pip3 install ansible
               #run ansible playbook
               cd ./.circleci/ansible
               sudo apt-get install awscli -y
               ##URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicIpAddress' --region us-west-2 --output text)
-              URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-27acb74 --query 'Reservations[].Instances[].PublicIpAddress' --region us-west-2 --output text)
+              ##URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-27acb74 --query 'Reservations[].Instances[].PublicIpAddress' --region us-west-2 --output text)
               ##Save the backend url
-              if echo $URL | tee -a inventory.txt ; then echo "backend url appended to inventory file" ; else echo "failed to add backend url to inventory file" ; fi
+              ##if echo $URL | tee -a inventory.txt ; then echo "backend url appended to inventory file" ; else echo "failed to add backend url to inventory file" ; fi
               ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt backendCopy.yml
 
   #Deploy frontend to s3bucket
@@ -399,34 +401,39 @@ workflows:
       #- frontend-infrastructure:
       #   requires:
       #     - network-infrastructure
-      - frontend-infrastructure
-      - save-old-bucketarn:
-         requires:
-           - frontend-infrastructure
-      - backend-infrastructure:
-         requires:
-           - frontend-infrastructure
-      - cloudfront-infrastructure:
-         requires:
-           - backend-infrastructure
-      - new-backend-infrastructure:
-         requires:
-           - cloudfront-infrastructure
-      - save-new-backurl:
-         requires:
-           - new-backend-infrastructure
-      - new-backend-config:
-         requires:
-           - new-backend-infrastructure   
-      - db-migrations:
-         requires:
-           - new-backend-config 
-      - upload-backend:
-         requires:
-           - db-migrations
-      - deploy-frontend:
-         requires:
-           - upload-backend
+      #- frontend-infrastructure
+      #- save-old-bucketarn:
+      #   requires:
+      #     - frontend-infrastructure
+      #- backend-infrastructure:
+      #   requires:
+      #     - frontend-infrastructure
+      #- cloudfront-infrastructure:
+      #   requires:
+      #     - backend-infrastructure
+      #- new-backend-infrastructure:
+      #   requires:
+      #     - cloudfront-infrastructure
+      #- new-frontend-infrastructure:
+      #   requires:
+      #     - cloudfront-infrastructure
+      #- save-new-backurl:
+      #   requires:
+      #     - new-backend-infrastructure
+      #- new-backend-config:
+      #   requires:
+      #     - new-backend-infrastructure   
+      #- db-migrations:
+      #   requires:
+      #     - new-backend-config 
+      #- upload-backend:
+      #   requires:
+      #     - db-migrations
+      - new-frontend-infrastructure
+      - new-backend-config
+      #- deploy-frontend:
+      #   requires:
+      #     - upload-backend
       #- smoketest:
       #   requires:
       #      - deploy-frontend

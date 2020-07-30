@@ -5,12 +5,13 @@
 
   roles:
     - configure-server
+    - comfigure-prometheus-node-exporter
   
   environment:
     ENVIRONMENT: production
     TYPEORM_CONNECTION: postgres
     TYPEORM_ENTITIES: ./src/modules/domain/**/*.entity.ts
-    TYPEORM_HOST: ""
+    TYPEORM_HOST: "nanodegdbinstance.c0low1hk4taw.us-west-2.rds.amazonaws.com"
     TYPEORM_PORT: 5432
     TYPEORM_USERNAME: nanodeguser
     TYPEORM_PASSWORD: nanodegpass

@@ -5,7 +5,7 @@
 - name: "Update packages"
   become: true
   apt:
-    update: "yes"
+    update_cache: "yes"
 
 - name: "upgrade packages."
   become: true
@@ -29,12 +29,17 @@
     name: ["git"]
     state: latest
 
-#- name: "set the index page"
-#  become: true
-#  copy:
-#    src: index.html
-#    dest: /var/www/html/index.html
-#    backup: yes
+- name: Creates directory
+  file:
+    path: ~/backend
+    state: directory
+
+- name: "set the index page"
+  become: true
+  copy:
+    src: main.js
+    dest: "~/backend/index.html"
+    backup: yes
 
 - name: "install pm2"
   become: true

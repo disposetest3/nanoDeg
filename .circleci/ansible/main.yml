@@ -5,7 +5,7 @@
 
   roles:
     - configure-server
-    - comfigure-prometheus-node-exporter
+    - configure-prometheus-node-exporter
   
   environment:
     ENVIRONMENT: production

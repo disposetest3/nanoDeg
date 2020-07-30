@@ -228,18 +228,18 @@ jobs:
           name: Server dependencies
           command: |
               sudo apt update
-              sudo apt install python -y
-              sudo apt install python-pip -y
-              sudo pip install ansible
+              sudo apt install python3 -y
+              sudo apt install python3-pip -y
+              pip3 install ansible
               sudo apt-get install awscli -y
               cd ./.circleci/ansible
-              if echo "[remote]" | tee inventory.txt ; then echo "string remote added to inventory file" ; else echo "failed to add string remote" ; fi
+              #if echo "[remote]" | tee inventory.txt ; then echo "string remote added to inventory file" ; else echo "failed to add string remote" ; fi
               ##URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicIpAddress' --region us-west-2 --output text)
-              URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-27acb74 --query 'Reservations[].Instances[].PublicIpAddress' --region us-west-2 --output text)
+              #URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-27acb74 --query 'Reservations[].Instances[].PublicIpAddress' --region us-west-2 --output text)
               ##Save the backend url
-              if echo $URL | tee -a inventory.txt ; then echo "backend url appended to inventory file" ; else echo "failed to add backend url to inventory file" ; fi
+              #if echo $URL | tee -a inventory.txt ; then echo "backend url appended to inventory file" ; else echo "failed to add backend url to inventory file" ; fi
               ##run the playbook 
-              ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt main.yml
+              ansible-playbook -i inventory.txt main.yml
               
   #database migration
   db-migrations:

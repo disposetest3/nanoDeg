@@ -2,7 +2,7 @@
 - name: Extract directory to ec2 instance
   become: true
   unarchive:
-    src: /root/project/dist.tar.gz
+    src: /root/project/backend/dist.tar.gz
     dest: /home/ubuntu
 
 #- name: create .env file 

@@ -227,9 +227,9 @@ jobs:
       - run:
           name: Server dependencies
           command: |
-              sudo apt update
-              sudo apt install python3 -y
-              sudo apt install python3-pip -y
+              sudo apt-get update
+              sudo apt-get install python3 -y
+              sudo apt-get install python3-pip -y
               pip3 install ansible
               sudo apt-get install awscli -y
               cd ./.circleci/ansible
@@ -315,7 +315,10 @@ jobs:
               sudo apt-get install awscli -y
       - run:
           name: Deploy frontend
-          command: aws s3 sync ./frontend/dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}/* --region us-west-2 --delete  
+          command: |
+              sudo apt-get update
+              sudo apt-get install awscli -y
+              aws s3 sync ./frontend/dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}/* --region us-west-2 --delete  
 
   #Smoketest
   smoketest:

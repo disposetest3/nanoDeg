@@ -5,11 +5,11 @@
     src: /root/project/backend.tar.gz
     dest: /home/ubuntu
 
-- name: create .env file 
-  become: true
-  shell: |
-     cd ./backend
-     echo -e 'NODE_ENV=remote\nVERSION=1\nTYPEORM_CONNECTION=postgres\nTYPEORM_MIGRATIONS_DIR=./src/migrations\nTYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts\nTYPEORM_MIGRATIONS=./src/migrations/*.ts\nENVIRONMENT=production\nTYPEORM_HOST=nanodegdb.c0low1hk4taw.us-west-2.rds.amazonaws.com\nTYPEORM_PORT=5432\nTYPEORM_USERNAME=nanoDegUser\nTYPEORM_PASSWORD=nanoDegUser\nTYPEORM_DATABASE=nanoDegDB' > .env
+#- name: create .env file 
+#  become: true
+#  shell: |
+#     cd ./backend
+#     echo -e 'NODE_ENV=remote\nVERSION=1\nTYPEORM_CONNECTION=postgres\nTYPEORM_MIGRATIONS_DIR=./src/migrations\nTYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts\nTYPEORM_MIGRATIONS=./src/migrations/*.ts\nENVIRONMENT=production\nTYPEORM_HOST=nanodegdb.c0low1hk4taw.us-west-2.rds.amazonaws.com\nTYPEORM_PORT=5432\nTYPEORM_USERNAME=nanoDegUser\nTYPEORM_PASSWORD=nanoDegUser\nTYPEORM_DATABASE=nanoDegDB' > .env
 
 
 

@@ -433,7 +433,6 @@ workflows:
       #   requires:
       #     - db-migrations
       - upload-backend
-      - deploy-frontend
       #- deploy-frontend:
       #   requires:
       #     - upload-backend

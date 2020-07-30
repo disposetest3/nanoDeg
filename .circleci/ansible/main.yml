@@ -7,11 +7,11 @@
     - configure-server
   
   environment:
-    ENVIRONMENT=production
-    TYPEORM_CONNECTION=postgres
-    TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts
-    TYPEORM_HOST=""
-    TYPEORM_PORT=5432
-    TYPEORM_USERNAME=nanodeguser
-    TYPEORM_PASSWORD=nanodegpass
-    TYPEORM_DATABASE=nanodegdb
+    ENVIRONMENT: production
+    TYPEORM_CONNECTION: postgres
+    TYPEORM_ENTITIES: ./src/modules/domain/**/*.entity.ts
+    TYPEORM_HOST: ""
+    TYPEORM_PORT: 5432
+    TYPEORM_USERNAME: nanodeguser
+    TYPEORM_PASSWORD: nanodegpass
+    TYPEORM_DATABASE: nanodegdb

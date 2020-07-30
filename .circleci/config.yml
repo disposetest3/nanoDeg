@@ -267,33 +267,27 @@ jobs:
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:8}" --request PUT --data "false" https://api.memstash.io/values/<< pipeline.id >>_migrations
             fi
 
+  
   #Copy backend files to ec2
   upload-backend:
     docker:
-      - image: circleci/node:13.8.0
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - add_ssh_keys:
           fingerprints: ["48:54:a0:b5:41:d3:4e:c2:0f:f8:b4:1e:8b:08:d5:35"]
+    #  - run:
+    #      name: Build Backend
+    #      command: cd ./backend && npm i && npm run build
       - run:
-          name: Build Backend
-          command: cd ./backend && npm i && npm run build
-      - run:
-          name: Compress compiled backend folder
-          command: tar -cvzf backend.tar.gz ./backend/dist/
+          name: Compress backend folder
+          command: tar -cvzf backen.tar.gz ./backend
       - run: 
           name: Copy files to server
           command: |
-              sudo apt-get update
-              sudo apt-get install python3 -y && sudo apt-get install python3-pip -y 
-              pip3 install --user ansible
+              apk add --update ansible 
               #run ansible playbook
               cd ./.circleci/ansible
-              #sudo apt-get install awscli -y
-              ##URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicIpAddress' --region us-west-2 --output text)
-              ##URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-27acb74 --query 'Reservations[].Instances[].PublicIpAddress' --region us-west-2 --output text)
-              ##Save the backend url
-              ##if echo $URL | tee -a inventory.txt ; then echo "backend url appended to inventory file" ; else echo "failed to add backend url to inventory file" ; fi
               ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt backendCopy.yml
 
   #Deploy frontend to s3bucket

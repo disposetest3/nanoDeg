@@ -5,11 +5,25 @@ commands:
   rollback:
     steps:
       - run:
-          name: Delete a stack
-          command: aws cloudformation delete-stack --stack-name nanoDegBackendStack
+          name: Delete s3 files
+          command: aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}/* --region us-west-2 --recursive
+      - run:
+          name: Delete current stacks
+          command: |
+            aws cloudformation delete-stack --stack-name nanoDegFrontendStack-${CIRCLE_WORKFLOW_ID:0:7} --region us-west-2
+            aws cloudformation delete-stack --stack-name nanoDegBackendStack-${CIRCLE_WORKFLOW_ID:0:7} --region us-west-2
       - run:
           name: Revert last Migration
-          command: npm run migrations:revert
+          command: |
+            VALUE=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:8}" --request GET https://api.memstash.io/values/<< pipeline.id >>_migrations)
+            if $VALUE == "true"
+            then
+            cd ./backend
+            echo "Reverting migrations"
+            npm run migrations:revert
+            else 
+            echo "No migration occured"
+            fi
       - run: return 1
 jobs:
   #build phase
@@ -111,8 +125,8 @@ jobs:
             cd ./.circleci/files
             aws cloudformation deploy \
               --template-file ./cloudfront.yml \
-              --stack-name nanoDegCloudfrontStack-${CIRCLE_WORKFLOW_ID:0:7} \
-              --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID:0:7} \
+              --stack-name nanoDegCloudfrontStack \
+              --parameter-overrides WorkflowID=nanoDegFrontend \
               --region us-west-2
 
   backend-infrastructure:
@@ -126,10 +140,51 @@ jobs:
             cd ./.circleci/files
             aws cloudformation deploy \
               --template-file ./backend.yml \
+              --stack-name nanoDegBackendStack \
+              --parameter-overrides ID=nanoDegBackend \
+              --region us-west-2 
+            
+  frontend-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Setup frontend infrastructure
+          command: |
+            cd ./.circleci/files
+            aws cloudformation deploy \
+              --template-file ./frontend.yml \
+              --stack-name nanoDegFrontendStack \
+              --parameter-overrides ID=nanoDegFrontend \
+              --region us-west-2
+  save-old-bucketarn:
+    docker: 
+      - image: circleci/node:13.8.0
+    steps:  
+      - checkout       
+      - run:
+          name: Save the Bucket ARN
+          command: |
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:6}" --request PUT --data "s3://udapeople-nanoDegFrontend/*" https://api.memstash.io/values/bucket_arn
+
+  ##New infrastructure
+  new-backend-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Setup backend infrastructure
+          command: |
+            cd ./.circleci/files
+            aws cloudformation deploy \
+              --template-file ./backend.yml \
               --stack-name nanoDegBackendStack-${CIRCLE_WORKFLOW_ID:0:7} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7} \
               --region us-west-2
-  save-backurl:
+
+  save-new-backurl:
     docker: 
       - image: circleci/node:13.8.0
     steps:
@@ -144,9 +199,9 @@ jobs:
             URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicDnsName' --region us-west-2 --output text)
             ##Save the backend url
             if echo $URL | tee -a inventory.txt ; then echo "backend url appended to inventory file" ; else echo "failed to add backend url to inventory file" ; fi
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "$URL" https://api.memstash.io/values/backend_url 
-            
-  frontend-infrastructure:
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "$URL" https://api.memstash.io/values/backend_url
+
+  new-frontend-infrastructure:
     docker:
       - image: amazon/aws-cli
     steps:
@@ -160,18 +215,9 @@ jobs:
               --stack-name nanoDegFrontendStack-${CIRCLE_WORKFLOW_ID:0:7} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7} \
               --region us-west-2
-  save-bucketarn:
-    docker: 
-      - image: circleci/node:13.8.0
-    steps:  
-      - checkout       
-      - run:
-          name: Save the Bucket ARN
-          command: |
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:6}" --request PUT --data "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}/*" https://api.memstash.io/values/bucket_arn
 
-  #Configure server
-  backend-config:
+  #Configure new server
+  new-backend-config:
     docker:
       - image: circleci/node:13.8.0
     steps:
@@ -214,27 +260,12 @@ jobs:
           name: Save result value
           command: |
             cd ./backend
-            if grep "query: COMMIT" migration_output.txt || grep "No migrations are pending" migration_output.txt
+            if grep "executed successfully" migration_output.txt
             then
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:8}" --request PUT --data "true" https://api.memstash.io/values/<< pipeline.id >>_migrations
             else
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:8}" --request PUT --data "false" https://api.memstash.io/values/<< pipeline.id >>_migrations
             fi
-
-  vm-db-migrations:
-    docker:
-      - image: python:3.7-alpine3.11
-    steps:
-      - checkout
-      - add_ssh_keys:
-          fingerprints: ["48:54:a0:b5:41:d3:4e:c2:0f:f8:b4:1e:8b:08:d5:35"]
-      - run:
-          name: ansible migration from vm
-          command: |
-              apk add --update ansible 
-              #run ansible playbook
-              cd ./.circleci/ansible
-              ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt deploy.yml
 
   #Copy backend files to ec2
   upload-backend:
@@ -282,9 +313,7 @@ jobs:
               sudo apt-get install awscli -y
       - run:
           name: Deploy frontend
-          command: |
-              ARN=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:6}" --request GET https://api.memstash.io/values/bucket_arn)
-              aws s3 sync ./frontend/dist $ARN --region us-west-2 --delete  
+          command: aws s3 sync ./frontend/dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}/* --region us-west-2 --delete  
 
   #Smoketest
   smoketest:
@@ -313,6 +342,34 @@ jobs:
       - rollback:
           when: on_fail
 
+  #promotion phase
+  promotion:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Promote frontend to production
+          command: |
+              cd ./.circleci/files
+              aws cloudformation deploy \
+                --template-file ./cloudfront.yml \
+                --stack-name nanoDegCloudfrontStack \
+                --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID:0:7} \
+                --region us-west-2
+  
+  #cleanup phase
+  cleanup:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Clear the old resources.
+          command: |
+            aws cloudformation delete-stack --stack-name nanoDegFrontendStack --region us-west-2
+            aws cloudformation delete-stack --stack-name nanoDegBackendStack --region us-west-2
+          
 
 workflows:
   default:
@@ -342,37 +399,42 @@ workflows:
       #- frontend-infrastructure:
       #   requires:
       #     - network-infrastructure
-      #- save-bucketarn:
-      #   requires:
-      #     - frontend-infrastructure
-      #- backend-infrastructure:
-      #   requires:
-      #     - frontend-infrastructure
-      #- save-backurl:
-      #   requires:
-      #     - backend-infrastructure
-      #- cloudfront-infrastructure:
-      #   requires:
-      #     - backend-infrastructure
-      #- backend-config:
-      #   requires:
-      #     - backend-infrastructure
-      - backend-config
+      - frontend-infrastructure
+      - save-old-bucketarn:
+         requires:
+           - frontend-infrastructure
+      - backend-infrastructure:
+         requires:
+           - frontend-infrastructure
+      - cloudfront-infrastructure:
+         requires:
+           - backend-infrastructure
+      - new-backend-infrastructure:
+         requires:
+           - cloudfront-infrastructure
+      - save-new-backurl:
+         requires:
+           - new-backend-infrastructure
+      - new-backend-config:
+         requires:
+           - new-backend-infrastructure   
+      - db-migrations:
+         requires:
+           - new-backend-config 
       - upload-backend:
-          requires:
-            - backend-config
-      #- db-migrations:
-      #   requires:
-      #     - cloudfront-infrastructure
-      #     - backend-config 
-      #- upload-backend:
-      #   requires:
-      #     - db-migrations
-      #- deploy-frontend:
-      #   requires:
-      #     - upload-backend
+         requires:
+           - db-migrations
+      - deploy-frontend:
+         requires:
+           - upload-backend
       #- smoketest:
-      #    requires:
+      #   requires:
       #      - deploy-frontend
+      #- promotion:
+      #   requires:
+      #     - smoketest
+      #- cleanup:
+      #   requires:
+      #     - promotion
 
            

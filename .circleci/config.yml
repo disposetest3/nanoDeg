@@ -138,12 +138,12 @@ jobs:
           name: Get backend url and Save it to memstash and inventory file
           command: |
             cd ./.circleci/ansible
-            echo "[remote]" | tee inventory.txt
+            if echo "[remote]" | tee inventory.txt ; then echo "string remote added to inventory file" ; else echo "failed to add string remote" ; fi
             ##Get the backend URL
             sudo apt-get install awscli -y
             URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicDnsName' --region us-west-2 --output text)
             ##Save the backend url
-            echo $URL | tee -a inventory.txt
+            if echo $URL | tee -a inventory.txt ; then echo "backend url appended to inventory file" ; else echo "failed to add backend url to inventory file" ; fi
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "$URL" https://api.memstash.io/values/backend_url 
             
   frontend-infrastructure:
@@ -205,7 +205,7 @@ jobs:
           name: Save result value
           command: |
             cd ./backend
-            if((grep "query: COMMIT" migration_output.txt || grep "No migrations are pending" migration_output.txt))
+            if grep "query: COMMIT" migration_output.txt || grep "No migrations are pending" migration_output.txt
             then
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:8}" --request PUT --data "true" https://api.memstash.io/values/<< pipeline.id >>_migrations
             else

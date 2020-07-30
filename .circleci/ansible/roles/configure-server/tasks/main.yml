@@ -29,12 +29,12 @@
     name: ["git"]
     state: latest
 
-- name: "set the index page"
-  become: true
-  copy:
-    src: index.html
-    dest: /var/www/html/index.html
-    backup: yes
+#- name: "set the index page"
+#  become: true
+#  copy:
+#    src: index.html
+#    dest: /var/www/html/index.html
+#    backup: yes
 
 - name: "install pm2"
   become: true

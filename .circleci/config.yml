@@ -284,9 +284,9 @@ jobs:
       - run: 
           name: Copy files to server
           command: |
-              sudo apt update
-              sudo apt install python3 -y
-              sudo apt install python3-pip -y
+              sudo apt-get update
+              sudo apt-get install python3 -y
+              sudo apt-get install python3-pip -y
               pip3 install ansible
               #run ansible playbook
               cd ./.circleci/ansible
@@ -312,13 +312,13 @@ jobs:
           command: |
               API_URL=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/backend_url)
               cd ./frontend && npm i && npm run build
-              sudo apt-get install awscli -y
       - run:
           name: Deploy frontend
           command: |
               sudo apt-get update
               sudo apt-get install awscli -y
-              aws s3 sync ./frontend/dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}/* --region us-west-2 --delete  
+              #aws s3 sync ./frontend/dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}/* --region us-west-2 --delete
+              aws s3 sync ./frontend/dist s3://udapeople-9df9c0c/* --region us-west-2 --delete  
 
   #Smoketest
   smoketest:
@@ -432,7 +432,8 @@ workflows:
       #- upload-backend:
       #   requires:
       #     - db-migrations
-      - new-backend-config
+      - upload-backend
+      - deploy-frontend
       #- deploy-frontend:
       #   requires:
       #     - upload-backend

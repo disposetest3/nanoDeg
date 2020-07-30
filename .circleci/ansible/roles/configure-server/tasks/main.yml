@@ -5,18 +5,18 @@
 - name: "Update packages"
   become: true
   shell: |
-      apt-get update
+      apt update
 
-- name: "Upgrade packages"
+- name: "upgrade packages."
   become: true
-  shell: |
-      apt-get upgrade -y
+  apt:
+    upgrade: "yes"
 
 - name: "install node js dependencies"
   become: true
   shell: |
       curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-      sudo apt-get install -y nodejs
+      apt-get install -y nodejs
 
 - name: "install apache 2"
   become: true

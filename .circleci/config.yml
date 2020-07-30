@@ -184,6 +184,7 @@ jobs:
               apk add --update ansible 
               #run ansible playbook
               cd ./.circleci/ansible
+              sudo apt-get install awscli -y
               if echo "[remote]" | tee inventory.txt ; then echo "string remote added to inventory file" ; else echo "failed to add string remote" ; fi
               ##URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicDnsName' --region us-west-2 --output text)
               URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-27acb74 --query 'Reservations[].Instances[].PublicDnsName' --region us-west-2 --output text)
@@ -254,6 +255,7 @@ jobs:
               sudo apt install ansible -y
               #run ansible playbook
               cd ./.circleci/ansible
+              sudo apt-get install awscli -y
               ##URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicDnsName' --region us-west-2 --output text)
               URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-27acb74 --query 'Reservations[].Instances[].PublicDnsName' --region us-west-2 --output text)
               ##Save the backend url

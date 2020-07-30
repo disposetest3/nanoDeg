@@ -41,10 +41,14 @@
     dest: /home/ubuntu/backend/index.html
     backup: yes
 
-- name: "install pm2"
+- name: "Install pm2"
   become: true
   shell: |
       npm install -g pm2
+
+- name: Executing node
+  shell: |
+    pm2 start ~/backend/main.js -f
 
 - name: "Cofigure pm2"
   become: true

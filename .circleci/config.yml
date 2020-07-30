@@ -184,6 +184,12 @@ jobs:
               apk add --update ansible 
               #run ansible playbook
               cd ./.circleci/ansible
+              if echo "[remote]" | tee inventory.txt ; then echo "string remote added to inventory file" ; else echo "failed to add string remote" ; fi
+              ##URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicDnsName' --region us-west-2 --output text)
+              URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-27acb74 --query 'Reservations[].Instances[].PublicDnsName' --region us-west-2 --output text)
+              ##Save the backend url
+              if echo $URL | tee -a inventory.txt ; then echo "backend url appended to inventory file" ; else echo "failed to add backend url to inventory file" ; fi
+              ##run the playbook 
               ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt main.yml
               
   #database migration
@@ -248,6 +254,10 @@ jobs:
               sudo apt install ansible -y
               #run ansible playbook
               cd ./.circleci/ansible
+              ##URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicDnsName' --region us-west-2 --output text)
+              URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-27acb74 --query 'Reservations[].Instances[].PublicDnsName' --region us-west-2 --output text)
+              ##Save the backend url
+              if echo $URL | tee -a inventory.txt ; then echo "backend url appended to inventory file" ; else echo "failed to add backend url to inventory file" ; fi
               ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt backendCopy.yml
 
   #Deploy frontend to s3bucket
@@ -271,7 +281,6 @@ jobs:
           command: |
               ARN=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:6}" --request GET https://api.memstash.io/values/bucket_arn)
               aws s3 sync ./frontend/dist $ARN --region us-west-2 --delete  
-  ######################################################################s3://udapeople-nanodegfront
 
   #Smoketest
   smoketest:
@@ -329,32 +338,35 @@ workflows:
       #- frontend-infrastructure:
       #   requires:
       #     - network-infrastructure
-      - frontend-infrastructure
-      - save-bucketarn:
-         requires:
-           - frontend-infrastructure
-      - backend-infrastructure:
-         requires:
-           - frontend-infrastructure
-      - save-backurl:
-         requires:
-           - backend-infrastructure
-      - cloudfront-infrastructure:
-         requires:
-           - backend-infrastructure
-      - backend-config:
-         requires:
-           - backend-infrastructure
-      - db-migrations:
-         requires:
-           - cloudfront-infrastructure
-           - backend-config 
+      #- save-bucketarn:
+      #   requires:
+      #     - frontend-infrastructure
+      #- backend-infrastructure:
+      #   requires:
+      #     - frontend-infrastructure
+      #- save-backurl:
+      #   requires:
+      #     - backend-infrastructure
+      #- cloudfront-infrastructure:
+      #   requires:
+      #     - backend-infrastructure
+      #- backend-config:
+      #   requires:
+      #     - backend-infrastructure
+      - backend-config
       - upload-backend:
-         requires:
-           - db-migrations
-      - deploy-frontend:
-         requires:
-           - upload-backend
+          requires:
+            - backend-config
+      #- db-migrations:
+      #   requires:
+      #     - cloudfront-infrastructure
+      #     - backend-config 
+      #- upload-backend:
+      #   requires:
+      #     - db-migrations
+      #- deploy-frontend:
+      #   requires:
+      #     - upload-backend
       #- smoketest:
       #    requires:
       #      - deploy-frontend

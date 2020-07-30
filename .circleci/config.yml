@@ -126,7 +126,7 @@ jobs:
             aws cloudformation deploy \
               --template-file ./cloudfront.yml \
               --stack-name nanoDegCloudfrontStack \
-              --parameter-overrides WorkflowID=nanoDegFrontend \
+              --parameter-overrides WorkflowID=nanodegfrontend \
               --region us-west-2
 
   backend-infrastructure:
@@ -156,7 +156,7 @@ jobs:
             aws cloudformation deploy \
               --template-file ./frontend.yml \
               --stack-name nanoDegFrontendStack \
-              --parameter-overrides ID=nanoDegFrontend \
+              --parameter-overrides ID=nanodegfrontend \
               --region us-west-2
   save-old-bucketarn:
     docker: 
@@ -166,7 +166,7 @@ jobs:
       - run:
           name: Save the Bucket ARN
           command: |
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:6}" --request PUT --data "s3://udapeople-nanoDegFrontend/*" https://api.memstash.io/values/bucket_arn
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:6}" --request PUT --data "s3://udapeople-nanodegfrontend/*" https://api.memstash.io/values/bucket_arn
 
   ##New infrastructure
   new-backend-infrastructure:

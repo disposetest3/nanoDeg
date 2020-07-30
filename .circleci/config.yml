@@ -318,7 +318,7 @@ jobs:
               sudo apt-get update
               sudo apt-get install awscli -y
               #aws s3 sync ./frontend/dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}/* --region us-west-2 --delete
-              aws s3 sync ./frontend/dist s3://udapeople-9df9c0c/* --region us-west-2 --delete  
+              aws s3 sync ./frontend/dist s3://udapeople-9df9c0c --region us-west-2 --delete  
 
   #Smoketest
   smoketest:
@@ -432,7 +432,8 @@ workflows:
       #- upload-backend:
       #   requires:
       #     - db-migrations
-      - upload-backend
+      #- upload-backend
+      - depoloy-frontend
       #- deploy-frontend:
       #   requires:
       #     - upload-backend

@@ -233,11 +233,11 @@ jobs:
               pip3 install ansible
               sudo apt-get install awscli -y
               cd ./.circleci/ansible
-              #if echo "[remote]" | tee inventory.txt ; then echo "string remote added to inventory file" ; else echo "failed to add string remote" ; fi
-              ##URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicIpAddress' --region us-west-2 --output text)
+              if echo "[remote]" | tee inventory.txt ; then echo "string remote added to inventory file" ; else echo "failed to add string remote" ; fi
+              URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicIpAddress' --region us-west-2 --output text)
               #URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-27acb74 --query 'Reservations[].Instances[].PublicIpAddress' --region us-west-2 --output text)
               ##Save the backend url
-              #if echo $URL | tee -a inventory.txt ; then echo "backend url appended to inventory file" ; else echo "failed to add backend url to inventory file" ; fi
+              if echo $URL | tee -a inventory.txt ; then echo "backend url appended to inventory file" ; else echo "failed to add backend url to inventory file" ; fi
               ##run the playbook 
               ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt main.yml
               
@@ -280,7 +280,6 @@ jobs:
           name: Build Backend
           command: |
               apk add --update npm
-              pip3 install awscli
               cd ./backend && npm i && npm run build
       - run:
           name: Compress backend folder
@@ -291,8 +290,13 @@ jobs:
           name: Copy files to server
           command: |
               apk add --update ansible 
-              #run ansible playbook
+              pip3 install awscli
               cd ./.circleci/ansible
+              #run ansible playbook
+              URL=$(aws ec2 describe-instances --filter Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[].Instances[].PublicIpAddress' --region us-west-2 --output text)
+              #Save the backend url
+              if echo "[remote]" | tee inventory.txt ; then echo "string remote added to inventory file" ; else echo "failed to add string remote" ; fi
+              if echo $URL | tee -a inventory.txt ; then echo "backend url appended to inventory file" ; else echo "failed to add backend url to inventory file" ; fi
               ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt backendCopy.yml
 
   #Deploy frontend to s3bucket
@@ -315,8 +319,8 @@ jobs:
           command: |
               sudo apt-get update
               sudo apt-get install awscli -y
-              #aws s3 sync ./frontend/dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}/* --region us-west-2 --delete
-              aws s3 sync ./frontend/dist s3://udapeople-9df9c0c --region us-west-2 --delete  
+              aws s3 sync ./frontend/dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}/* --region us-west-2 --delete
+              #aws s3 sync ./frontend/dist s3://udapeople-9df9c0c --region us-west-2 --delete  
 
   #Smoketest
   smoketest:
@@ -340,7 +344,7 @@ jobs:
               then
               return 1
               else
-              return 0
+              return 1
               fi
       - rollback:
           when: on_fail
@@ -415,34 +419,34 @@ workflows:
       #- new-backend-infrastructure:
       #   requires:
       #     - cloudfront-infrastructure
+      - new-backend-infrastructure
+      - new-frontend-infrastructure
       #- new-frontend-infrastructure:
       #   requires:
       #     - cloudfront-infrastructure
-      #- save-new-backurl:
-      #   requires:
-      #     - new-backend-infrastructure
-      #- new-backend-config:
-      #   requires:
-      #     - new-backend-infrastructure   
-      #- db-migrations:
-      #   requires:
-      #     - new-backend-config 
-      #- upload-backend:
-      #   requires:
-      #     - db-migrations
-      - upload-backend
-      #- deploy-frontend
-      #- deploy-frontend:
-      #   requires:
-      #     - upload-backend
-      #- smoketest:
-      #   requires:
-      #      - deploy-frontend
-      #- promotion:
-      #   requires:
-      #     - smoketest
-      #- cleanup:
-      #   requires:
-      #     - promotion
+      - save-new-backurl:
+         requires:
+           - new-backend-infrastructure
+      - new-backend-config:
+         requires:
+           - new-backend-infrastructure   
+      - db-migrations:
+         requires:
+           - new-backend-config 
+      - upload-backend:
+         requires:
+           - db-migrations
+      - deploy-frontend:
+         requires:
+           - upload-backend
+      - smoketest:
+         requires:
+            - deploy-frontend
+      - promotion:
+         requires:
+           - smoketest
+      - cleanup:
+         requires:
+           - promotion
 
            

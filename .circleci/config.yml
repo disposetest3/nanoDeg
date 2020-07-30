@@ -279,8 +279,8 @@ jobs:
       - run:
           name: Build Backend
           command: |
-          apk add --update npm
-          cd ./backend && npm i && npm run build
+              apk add --update npm
+              cd ./backend && npm i && npm run build
       - run:
           name: Compress backend folder
           command: tar -cvzf backend.tar.gz ./backend/dist

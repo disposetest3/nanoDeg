@@ -280,7 +280,7 @@ jobs:
           name: Build Backend
           command: |
               apk add --update npm
-              aws
+              pip3 install awscli
               cd ./backend && npm i && npm run build
       - run:
           name: Compress backend folder

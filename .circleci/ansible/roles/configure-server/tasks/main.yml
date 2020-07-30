@@ -4,8 +4,8 @@
 
 - name: "Update packages"
   become: true
-  shell: |
-      apt update
+  apt:
+    update: "yes"
 
 - name: "upgrade packages."
   become: true

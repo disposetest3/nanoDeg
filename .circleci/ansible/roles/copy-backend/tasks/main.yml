@@ -4,6 +4,7 @@
   unarchive:
     src: /root/project/backend.tar.gz
     dest: /home/ubuntu
+    remote_src: yes
 
 #- name: create .env file 
 #  become: true

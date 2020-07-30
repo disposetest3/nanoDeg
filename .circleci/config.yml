@@ -284,7 +284,7 @@ jobs:
               cd ./backend && npm i && npm run build
       - run:
           name: Compress backend folder
-          command: tar -cvzf backend.tar.gz ./backend/dist
+          command: tar -cvzf dist.tar.gz ./backend/dist
       - run: 
           name: Copy files to server
           command: |

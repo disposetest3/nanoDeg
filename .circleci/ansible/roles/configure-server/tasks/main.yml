@@ -31,14 +31,14 @@
 
 - name: Creates directory
   file:
-    path: ~/backend
+    path: ~/dist
     state: directory
 
 - name: "set the index page"
   become: true
   copy:
     src: main.js
-    dest: /home/ubuntu/backend/main.js
+    dest: /home/ubuntu/dist/main.js
     backup: yes
 
 - name: "Install pm2"
@@ -48,7 +48,7 @@
 
 - name: Executing node
   shell: |
-    pm2 start ~/backend/main.js -f
+    pm2 start ~/dist/main.js -f
 
 - name: "Cofigure pm2"
   become: true

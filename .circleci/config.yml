@@ -239,7 +239,7 @@ jobs:
               ##Save the backend url
               #if echo $URL | tee -a inventory.txt ; then echo "backend url appended to inventory file" ; else echo "failed to add backend url to inventory file" ; fi
               ##run the playbook 
-              ansible-playbook -i inventory.txt main.yml
+              ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.txt main.yml
               
   #database migration
   db-migrations:

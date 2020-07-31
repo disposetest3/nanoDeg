@@ -303,7 +303,7 @@ jobs:
   #Deploy frontend to s3bucket
   deploy-frontend:
     docker:
-      - image: circleci/node:13.8.0
+      - image: python:3.7-alpine3.11
     environment:
       API_URL=""
     steps:
@@ -313,13 +313,13 @@ jobs:
       - run:
           name: Rebuild frontend
           command: |
+              apk add --update npm
               API_URL=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/backend_url)
               cd ./frontend && npm i && npm run build
       - run:
           name: Deploy frontend
           command: |
-              sudo apt-get update
-              sudo apt-get install awscli -y
+              pip3 install awscli
               #aws s3 sync ./frontend/dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --region us-west-2 --delete
               aws s3 sync ./frontend/dist s3://udapeople-2e05a45 --region us-west-2 --delete  
 

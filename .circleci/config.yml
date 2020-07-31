@@ -25,6 +25,7 @@ commands:
             echo "No migration occured"
             fi
       - run: return 1
+  when: on_fail
 jobs:
   #build phase
   build-frontend:
@@ -346,8 +347,7 @@ jobs:
               else
               return 1
               fi
-      - rollback:
-          when: on_fail
+      - rollback
 
   #promotion phase
   promotion:

@@ -419,8 +419,11 @@ workflows:
       #- new-backend-infrastructure:
       #   requires:
       #     - cloudfront-infrastructure
-      - new-backend-infrastructure
-      - new-frontend-infrastructure
+      - backend-infrastructure
+      - new-backend-infrastructure:
+         requires:
+            - backend-infrastructure
+      #- new-frontend-infrastructure
       #- new-frontend-infrastructure:
       #   requires:
       #     - cloudfront-infrastructure

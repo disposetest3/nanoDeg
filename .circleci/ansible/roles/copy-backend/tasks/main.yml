@@ -5,15 +5,15 @@
     src: /root/project/backend/dist.tar.gz
     dest: /home/ubuntu
 
-- name: Executing node
-  shell: |
-    pm2 start ~/dist/main.js -f
+#- name: Executing node
+#  shell: |
+#    pm2 start ~/dist/main.js -f
 
 - name: create .env file 
   become: true
   shell: |
      cd ./dist
-     echo -e 'NODE_ENV=remote\nTYPEORM_CONNECTION=postgres\nTYPEORM_ENTITIES=./modules/domain/**/*.entity.ts\nENVIRONMENT=production\nTYPEORM_HOST=nanodegdbinstance.c0low1hk4taw.us-west-2.rds.amazonaws.com\nTYPEORM_PORT=5432\nTYPEORM_USERNAME=nanodeguser\nTYPEORM_PASSWORD=nanodegpass\nTYPEORM_DATABASE=nanodegdb' > .env
+     echo -e 'NODE_ENV=production\nTYPEORM_CONNECTION=postgres\nTYPEORM_ENTITIES=./modules/domain/**/*.entity.ts\nENVIRONMENT=production\nTYPEORM_HOST=nanodegdbinstance.c0low1hk4taw.us-west-2.rds.amazonaws.com\nTYPEORM_PORT=5432\nTYPEORM_USERNAME=nanodeguser\nTYPEORM_PASSWORD=nanodegpass\nTYPEORM_DATABASE=nanodegdb' > .env
 
 
 

@@ -374,6 +374,7 @@ jobs:
       - run:
           name: Clear the old resources.
           command: |
+            aws s3 rm s3://udapeople-nanodegfrontend --region us-west-2 --recursive
             aws cloudformation delete-stack --stack-name nanoDegFrontendStack --region us-west-2
             aws cloudformation delete-stack --stack-name nanoDegBackendStack --region us-west-2
           
@@ -420,10 +421,8 @@ workflows:
       #   requires:
       #     - cloudfront-infrastructure
       - backend-infrastructure
-      - new-backend-infrastructure:
-         requires:
-            - backend-infrastructure
-      #- new-frontend-infrastructure
+      - new-backend-infrastructure
+      - new-frontend-infrastructure
       #- new-frontend-infrastructure:
       #   requires:
       #     - cloudfront-infrastructure

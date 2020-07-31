@@ -421,36 +421,35 @@ workflows:
       #- new-backend-infrastructure:
       #   requires:
       #     - cloudfront-infrastructure
-      #- backend-infrastructure
-      #- new-backend-infrastructure
-      #- new-frontend-infrastructure
+      - new-backend-infrastructure
+      - new-frontend-infrastructure
       #- new-frontend-infrastructure:
       #   requires:
       #     - cloudfront-infrastructure
-      #- save-new-backurl:
-      #   requires:
-      #     - new-backend-infrastructure
-      #- new-backend-config:
-      #   requires:
-      #     - new-backend-infrastructure   
-      #- db-migrations:
-      #   requires:
-      #     - new-backend-config 
-      #- upload-backend:
-      #   requires:
-      #     - db-migrations
-      #- deploy-frontend:
-      #   requires:
-      #     - upload-backend
-      #- smoketest:
-      #   requires:
-      #      - deploy-frontend
-      #- promotion:
-      #   requires:
-      #     - smoketest
-      #- cleanup:
-      #   requires:
-      #     - promotion
-      - deploy-frontend
+      - save-new-backurl:
+         requires:
+           - new-backend-infrastructure
+      - new-backend-config:
+         requires:
+           - new-backend-infrastructure   
+      - db-migrations:
+         requires:
+           - new-backend-config 
+      - upload-backend:
+         requires:
+           - db-migrations
+      - deploy-frontend:
+         requires:
+           - upload-backend
+      - smoketest:
+         requires:
+            - deploy-frontend
+      - promotion:
+         requires:
+           - smoketest
+      - cleanup:
+         requires:
+           - promotion
+
 
            

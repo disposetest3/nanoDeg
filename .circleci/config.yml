@@ -320,8 +320,8 @@ jobs:
           command: |
               sudo apt-get update
               sudo apt-get install awscli -y
-              aws s3 sync ./frontend/dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}/* --region us-west-2 --delete
-              #aws s3 sync ./frontend/dist s3://udapeople-9df9c0c --region us-west-2 --delete  
+              #aws s3 sync ./frontend/dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --region us-west-2 --delete
+              aws s3 sync ./frontend/dist s3://udapeople-2e05a45 --region us-west-2 --delete  
 
   #Smoketest
   smoketest:
@@ -420,35 +420,36 @@ workflows:
       #- new-backend-infrastructure:
       #   requires:
       #     - cloudfront-infrastructure
-      - backend-infrastructure
-      - new-backend-infrastructure
-      - new-frontend-infrastructure
+      #- backend-infrastructure
+      #- new-backend-infrastructure
+      #- new-frontend-infrastructure
       #- new-frontend-infrastructure:
       #   requires:
       #     - cloudfront-infrastructure
-      - save-new-backurl:
-         requires:
-           - new-backend-infrastructure
-      - new-backend-config:
-         requires:
-           - new-backend-infrastructure   
-      - db-migrations:
-         requires:
-           - new-backend-config 
-      - upload-backend:
-         requires:
-           - db-migrations
-      - deploy-frontend:
-         requires:
-           - upload-backend
-      - smoketest:
-         requires:
-            - deploy-frontend
-      - promotion:
-         requires:
-           - smoketest
-      - cleanup:
-         requires:
-           - promotion
+      #- save-new-backurl:
+      #   requires:
+      #     - new-backend-infrastructure
+      #- new-backend-config:
+      #   requires:
+      #     - new-backend-infrastructure   
+      #- db-migrations:
+      #   requires:
+      #     - new-backend-config 
+      #- upload-backend:
+      #   requires:
+      #     - db-migrations
+      #- deploy-frontend:
+      #   requires:
+      #     - upload-backend
+      #- smoketest:
+      #   requires:
+      #      - deploy-frontend
+      #- promotion:
+      #   requires:
+      #     - smoketest
+      #- cleanup:
+      #   requires:
+      #     - promotion
+      - deploy-frontend
 
            

@@ -7,7 +7,7 @@ commands:
       - run:
           name: Delete s3 files
           command: aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}/* --region us-west-2 --recursive
-        when: on_fail
+          when: on_fail
       - run:
           name: Delete current stacks
           command: |
@@ -351,10 +351,6 @@ jobs:
               else
               exit 1
               fi
-        when: on_fail
-      - rollback:
-          to: "roll"
-        
 
   #promotion phase
   promotion:

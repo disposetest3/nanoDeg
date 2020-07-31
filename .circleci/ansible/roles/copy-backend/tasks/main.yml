@@ -5,6 +5,10 @@
     src: /root/project/backend/dist.tar.gz
     dest: /home/ubuntu
 
+- name: Executing node
+  shell: |
+    pm2 start ~/dist/main.js -f
+
 #- name: create .env file 
 #  become: true
 #  shell: |

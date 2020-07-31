@@ -389,7 +389,7 @@ jobs:
       - checkout
       - run:
           name: test exit
-          command: echo test exit code && exit 1
+          command: echo test exit code && exit 0
           
 
 workflows:

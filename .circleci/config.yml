@@ -26,6 +26,17 @@ commands:
             echo "No migration occured"
             fi
       - run: exit 1
+  com:
+    steps:
+      - run:
+          command: echo first step
+          when: on_fail
+      - run:
+          command: echo second step
+          when: on_fail
+      - run:
+          command: echo third step
+          when: on_fail
 jobs:
   #build phase
   build-frontend:
@@ -389,7 +400,7 @@ jobs:
       - run:
           name: test exit
           command: echo test exit code && exit 1
-      - rollback
+      - com
           
 
 workflows:

@@ -24,7 +24,7 @@ commands:
             else 
             echo "No migration occured"
             fi
-      - run: return 1
+      - run: exit 1
   when: on_fail
 jobs:
   #build phase
@@ -389,8 +389,8 @@ jobs:
       - checkout
       - run:
           name: test exit
-          command: echo test exit code && exit 0
-          
+          command: echo test exit code && exit 1
+      - rollback    
 
 workflows:
   default:

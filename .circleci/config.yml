@@ -384,7 +384,7 @@ jobs:
 
   test:
     docker:
-      - image: amazoe/aws-cli
+      - image: amazon/aws-cli
     steps:
       - checkout
       - run:
